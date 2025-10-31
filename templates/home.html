@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyPlayer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .file-explorer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1px;
+            background: #e5e7eb;
+        }
+        .song-item {
+            background: white;
+            border: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .song-item:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+        .song-item.active {
+            background: #dbeafe;
+        }
+        .audio-player {
+            transition: all 0.3s ease;
+        }
+        .now-playing-bar {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .play-btn {
+            transition: all 0.2s ease;
+        }
+        .play-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-music text-blue-600 text-xl"></i>
+                    <span class="text-xl font-semibold text-gray-900">PyPlayer</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">{{ songs|length }} songs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-24">
+        <!-- Toolbar -->
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-gray-900">Music Library</h1>
+                <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    {{ songs|length }} items
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="join">
+                    <input type="text" placeholder="Search songs..." class="input input-bordered input-sm join-item">
+                    <button class="btn btn-sm btn-ghost join-item">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Explorer Header -->
+        <div class="bg-gray-100 border border-gray-200 rounded-t-lg px-4 py-2">
+            <div class="grid grid-cols-12 gap-4 text-sm font-medium text-gray-600">
+                <div class="col-span-5 flex items-center">
+                    <i class="fas fa-music mr-2 text-gray-400"></i>
+                    Name
+                </div>
+                <div class="col-span-4">Artist</div>
+                <div class="col-span-2">Album</div>
+                <div class="col-span-1 text-right">Year</div>
+            </div>
+        </div>
+
+        <!-- Songs List -->
+        <div class="bg-white border border-gray-200 border-t-0 rounded-b-lg">
+            {% for song in songs %}
+            <div class="song-item px-4 py-3 border-b border-gray-100 last:border-b-0 group"
+                 data-song-title="{{ song.title }}"
+                 data-song-artist="{{ song.artist }}"
+                 data-song-url="{{ url_for('serve_music', filename=song.path) }}">
+                <div class="grid grid-cols-12 gap-4 items-center">
+                    <!-- Song Name with Play Button -->
+                    <div class="col-span-5 flex items-center space-x-3">
+                        <button class="play-btn btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity"
+                                data-song-url="{{ url_for('serve_music', filename=song.path) }}"
+                                data-song-title="{{ song.title }}"
+                                data-song-artist="{{ song.artist }}">
+                            <i class="fas fa-play text-blue-600"></i>
+                        </button>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                <i class="fas fa-music text-blue-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900">{{ song.title }}</div>
+                                <div class="text-xs text-gray-500">MP3</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Artist -->
+                    <div class="col-span-4 text-gray-600">
+                        {{ song.artist }}
+                    </div>
+
+                    <!-- Album -->
+                    <div class="col-span-2 text-gray-600 text-sm">
+                        {{ song.album }}
+                    </div>
+
+                    <!-- Year -->
+                    <div class="col-span-1 text-right text-gray-500 text-sm">
+                        {{ song.year }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Empty State -->
+            {% if not songs %}
+            <div class="text-center py-12">
+                <i class="fas fa-music text-4xl text-gray-300 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No songs in library</h3>
+                <p class="text-gray-500">Add some music files to get started.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Now Playing Bar (Fixed at bottom) -->
+    <div class="now-playing-bar fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between">
+                <!-- Song Info -->
+                <div class="flex items-center space-x-4 min-w-0 flex-1">
+                    <div class="w-12 h-12 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-music text-blue-600"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium text-gray-900 truncate" id="now-playing-title">
+                            No song selected
+                        </div>
+                        <div class="text-sm text-gray-500 truncate" id="now-playing-artist">
+                            Click play on any song
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio Controls -->
+                <div class="flex items-center space-x-4 flex-1 justify-center max-w-2xl">
+                    <button class="btn btn-ghost btn-sm" onclick="skipPrevious()">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="btn btn-circle btn-primary" onclick="togglePlay()" id="play-pause-btn">
+                        <i class="fas fa-play" id="play-pause-icon"></i>
+                    </button>
+                    <button class="btn btn-ghost btn-sm" onclick="skipNext()">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    
+                    <!-- Audio Player (hidden but functional) -->
+                    <audio id="global-audio-player" class="hidden">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+
+                <!-- Volume and Time -->
+                <div class="flex items-center space-x-4 min-w-0 flex-1 justify-end">
+                    <div class="flex items-center space-x-2">
+                        <button class="btn btn-ghost btn-sm" onclick="toggleMute()" id="volume-btn">
+                            <i class="fas fa-volume-up" id="volume-icon"></i>
+                        </button>
+                        <input type="range" min="0" max="1" step="0.1" value="1" 
+                               class="range range-xs w-20" 
+                               onchange="setVolume(this.value)" 
+                               id="volume-slider">
+                    </div>
+                    <div class="text-sm text-gray-500 whitespace-nowrap">
+                        <span id="current-time">0:00</span> / 
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mt-2">
+                <input type="range" min="0" max="100" value="0" 
+                       class="range range-xs w-full" 
+                       onchange="seekAudio(this.value)" 
+                       id="progress-bar">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSongIndex = -1;
+        let songs = [];
+        const audioPlayer = document.getElementById('global-audio-player');
+        const progressBar = document.getElementById('progress-bar');
+        const currentTimeElement = document.getElementById('current-time');
+        const durationElement = document.getElementById('duration');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playPauseIcon = document.getElementById('play-pause-icon');
+        const volumeBtn = document.getElementById('volume-btn');
+        const volumeIcon = document.getElementById('volume-icon');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // Initialize songs array from DOM and set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const songElements = document.querySelectorAll('.song-item');
+            songs = Array.from(songElements).map((element, index) => ({
+                index: index,
+                title: element.dataset.songTitle,
+                artist: element.dataset.songArtist,
+                url: element.dataset.songUrl,
+                element: element
+            }));
+
+            // Set up play button event listeners
+            document.querySelectorAll('.play-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent triggering the row click
+                    const url = this.dataset.songUrl;
+                    const title = this.dataset.songTitle;
+                    const artist = this.dataset.songArtist;
+                    playSong(url, title, artist);
+                });
+            });
+
+            // Set up song row click event listeners
+            document.querySelectorAll('.song-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Only trigger if the click wasn't on a button or its children
+                    if (!e.target.closest('button')) {
+                        const url = this.dataset.songUrl;
+                        const title = this.dataset.songTitle;
+                        const artist = this.dataset.songArtist;
+                        playSong(url, title, artist);
+                    }
+                });
+            });
+        });
+
+        // Play song function
+        function playSong(url, title, artist) {
+            // Find song index
+            const songIndex = songs.findIndex(song => song.url === url);
+            if (songIndex === -1) return;
+
+            currentSongIndex = songIndex;
+            
+            // Update UI
+            document.getElementById('now-playing-title').textContent = title;
+            document.getElementById('now-playing-artist').textContent = artist;
+            
+            // Set audio source and play
+            audioPlayer.src = url;
+            audioPlayer.load();
+            audioPlayer.play().then(() => {
+                updatePlayPauseButton(true);
+            }).catch(error => {
+                console.log('Playback failed:', error);
+                // Fallback: try to play on user interaction
+                document.addEventListener('click', function tryPlayOnce() {
+                    audioPlayer.play().then(() => {
+                        updatePlayPauseButton(true);
+                    }).catch(e => {
+                        console.log('Playback still failed:', e);
+                    });
+                    document.removeEventListener('click', tryPlayOnce);
+                });
+            });
+
+            // Update active song styling
+            songs.forEach(song => song.element.classList.remove('active'));
+            songs[songIndex].element.classList.add('active');
+        }
+
+        // Toggle play/pause
+        function togglePlay() {
+            if (!audioPlayer.src) {
+                // If no song is loaded, play the first song
+                if (songs.length > 0) {
+                    const firstSong = songs[0];
+                    playSong(firstSong.url, firstSong.title, firstSong.artist);
+                }
+                return;
+            }
+
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                updatePlayPauseButton(true);
+            } else {
+                audioPlayer.pause();
+                updatePlayPauseButton(false);
+            }
+        }
+
+        // Update play/pause button
+        function updatePlayPauseButton(isPlaying) {
+            if (isPlaying) {
+                playPauseIcon.className = 'fas fa-pause';
+                playPauseBtn.classList.add('playing');
+            } else {
+                playPauseIcon.className = 'fas fa-play';
+                playPauseBtn.classList.remove('playing');
+            }
+        }
+
+        // Skip to next song
+        function skipNext() {
+            if (songs.length === 0) return;
+            const nextIndex = (currentSongIndex + 1) % songs.length;
+            const nextSong = songs[nextIndex];
+            playSong(nextSong.url, nextSong.title, nextSong.artist);
+        }
+
+        // Skip to previous song
+        function skipPrevious() {
+            if (songs.length === 0) return;
+            const prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            const prevSong = songs[prevIndex];
+            playSong(prevSong.url, prevSong.title, prevSong.artist);
+        }
+
+        // Toggle mute
+        function toggleMute() {
+            audioPlayer.muted = !audioPlayer.muted;
+            volumeIcon.className = audioPlayer.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+            volumeSlider.value = audioPlayer.muted ? 0 : audioPlayer.volume;
+        }
+
+        // Set volume
+        function setVolume(value) {
+            audioPlayer.volume = value;
+            audioPlayer.muted = (value == 0);
+            volumeIcon.className = value == 0 ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+        }
+
+        // Seek audio
+        function seekAudio(value) {
+            if (audioPlayer.duration) {
+                audioPlayer.currentTime = (value / 100) * audioPlayer.duration;
+            }
+        }
+
+        // Update progress bar and time
+        audioPlayer.addEventListener('timeupdate', function() {
+            if (audioPlayer.duration) {
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.value = progress;
+                
+                // Update time display
+                currentTimeElement.textContent = formatTime(audioPlayer.currentTime);
+                durationElement.textContent = formatTime(audioPlayer.duration);
+            }
+        });
+
+        // Format time (seconds to MM:SS)
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Handle song end
+        audioPlayer.addEventListener('ended', function() {
+            skipNext();
+        });
+
+        // Handle play/pause via spacebar
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+    </script>
+</body>
+</html>
