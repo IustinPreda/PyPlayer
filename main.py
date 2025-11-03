@@ -55,10 +55,34 @@ def get_all_songs():
         print(f"Error getting songs: {e}")
         return []
 
-@app.route("/home", methods=["POST", "GET"]) 
+def search_songs(query):
+    """Search songs by title, artist, or album"""
+    try:
+        conn = sqlite3.connect("songs.db")
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM songs 
+            WHERE title LIKE ? OR artist LIKE ? OR album LIKE ?
+        """, (f"%{query}%", f"%{query}%", f"%{query}%"))
+        results = cursor.fetchall()
+        conn.close()
+        return results
+    except Exception as e:
+        print(f"Error searching songs: {e}")
+        return []
+
+
+@app.route("/home", methods=["GET", "POST"])
 def home():
-    songs = get_all_songs()  # Get songs from database
-    return render_template("home.html", songs=songs)
+    query = request.args.get("q", "").strip()
+    if query:
+        songs = search_songs(query)
+    else:
+        songs = get_all_songs()
+    return render_template("home.html", songs=songs, query=query)
+
+
 
 @app.route('/music/<path:filename>')
 def serve_music(filename):

@@ -71,10 +71,13 @@
             </div>
             <div class="flex items-center space-x-2">
                 <div class="join">
-                    <input type="text" placeholder="Search songs..." class="input input-bordered input-sm join-item">
-                    <button class="btn btn-sm btn-ghost join-item">
+                    <form action="{{ url_for('home') }}" method="GET" class="join">
+                    <input type="text" name="q" value="{{ query or '' }}" placeholder="Search songs..." 
+                        class="input input-bordered input-sm join-item" />
+                    <button type="submit" class="btn btn-sm btn-ghost join-item">
                         <i class="fas fa-search"></i>
                     </button>
+                </form>
                 </div>
             </div>
         </div>
