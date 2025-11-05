@@ -1,10 +1,6 @@
 # PyPlayer
 A modern, full-stack music streaming web application built with Flask and Tailwind CSS. Features user authentication, a file-explorer style music library, and a sleek audio player.
 
-https://img.shields.io/badge/Python-3.7+-blue.svg
-https://img.shields.io/badge/Flask-2.0+-green.svg
-https://img.shields.io/badge/SQLite-Database-lightgrey.svg
-
 ✨ Features
 🎵 Music Streaming - Play MP3 files directly in the browser
 
