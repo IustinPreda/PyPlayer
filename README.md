@@ -29,23 +29,6 @@ Control playback from the bottom player bar
 
 Keyboard shortcuts: Spacebar for play/pause
 
-# 🏗️ Project Structure
-PyPlayer/
-├── main.py                 # Main Flask application
-├── userbase.py             # User database setup
-├── songbase.py             # Songs database setup
-├── users.db                # User database (auto-generated)
-├── songs.db                # Songs database (auto-generated)
-├── music/                  # Uploaded music files go here
-│   └── example.mp3
-├── templates/
-│   ├── auth/
-│   │   ├── login.html      # Login page
-│   │   └── register.html   # Registration page
-│   ├── admin/
-│   │   └── admin.html      # Admin panel
-│   └── home.html           # Main music library
-└── README.md
 
 # 🎨 Tech Stack
 Backend: Flask, SQLite3
