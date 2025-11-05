@@ -14,13 +14,17 @@ https://img.shields.io/badge/SQLite-Database-lightgrey.svg
 
 💾 SQLite Database - Lightweight and efficient data storage
 
+🛠️ Admin Panel – Upload new songs and delete existing ones
+
 
 # Adding Music
-Place your MP3 files in the music/ directory
+Upload music files (.mp3, .wav, .flac)
 
-Add song metadata to the database (see Database Setup below)
+Fill in metadata: title, artist, album, year
 
-Playing Music
+Songs will automatically appear in the music library
+
+# Playing Music
 Click any song row to play immediately
 
 Use the play button next to each song
@@ -29,21 +33,22 @@ Control playback from the bottom player bar
 
 Keyboard shortcuts: Spacebar for play/pause
 
-🏗️ Project Structure
-text
-pyclone-music/
-├── main.py                 # Flask application
-├── userbase.py            # User database setup
-├── songbase.py            # Songs database setup
-├── users.db               # User database (auto-generated)
-├── songs.db               # Songs database (auto-generated)
-├── music/                 # Your MP3 files go here
-│   └── your_songs.mp3
+# 🏗️ Project Structure
+PyPlayer/
+├── main.py                 # Main Flask application
+├── userbase.py             # User database setup
+├── songbase.py             # Songs database setup
+├── users.db                # User database (auto-generated)
+├── songs.db                # Songs database (auto-generated)
+├── music/                  # Uploaded music files go here
+│   └── example.mp3
 ├── templates/
 │   ├── auth/
-│   │   ├── login.html     # Login page
-│   │   └── register.html  # Registration page
-│   └── home.html          # Main music library
+│   │   ├── login.html      # Login page
+│   │   └── register.html   # Registration page
+│   ├── admin/
+│   │   └── admin.html      # Admin panel
+│   └── home.html           # Main music library
 └── README.md
 
 # 🎨 Tech Stack
@@ -58,12 +63,12 @@ Audio: HTML5 Audio API
 Styling: Modern CSS with glass morphism effects
 
 # 🔒 API Routes
-Method	Route	Description
 GET	/	Redirects to login
 GET/POST	/login	User login
 GET/POST	/register	User registration
-GET	/home	Main music library
+GET	/home	Music library
 GET	/music/<filename>	Serve music files
+GET/POST	/admin	Admin panel: upload/delete songs
 # 🎵 Audio Features
 Global Player: Fixed bottom bar with full controls
 
@@ -85,4 +90,6 @@ Keyboard Controls: Spacebar for play/pause
 
 
 <img width="1909" height="905" alt="Screenshot 2025-10-31 043001" src="https://github.com/user-attachments/assets/746d2ee7-cc2f-4c87-a768-dac4df7db84e" />
+
+<img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/49f445b0-a947-417f-b961-1fc34a2c7b04" />
 
