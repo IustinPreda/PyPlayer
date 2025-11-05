@@ -44,10 +44,16 @@ Styling: Modern CSS with glass morphism effects
 # 🔒 API Routes
 GET	/	Redirects to login
 GET/POST	/login	User login
+
 GET/POST	/register	User registration
+
 GET	/home	Music library
+
 GET	/music/<filename>	Serve music files
+
 GET/POST	/admin	Admin panel: upload/delete songs
+
+
 # 🎵 Audio Features
 Global Player: Fixed bottom bar with full controls
 
