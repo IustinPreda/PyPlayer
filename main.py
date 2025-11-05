@@ -10,6 +10,15 @@ DATABASE = "users.db"
 userbase.initialize_db()
 songbase.song_db()
 
+UPLOAD_FOLDER = "music"
+ALLOWED_EXTENSIONS = {"mp3", "wav", "flac"}
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -40,6 +49,7 @@ def add_user_to_db(username, email, password):
         print(f"Error adding user: {e}")
         return False
     
+
     
 def get_all_songs():
     """Get all songs from the songs database"""
@@ -93,22 +103,83 @@ def serve_music(filename):
 def index():
     return redirect(url_for("login"))
 
+import os
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = "music"
+ALLOWED_EXTENSIONS = {"mp3", "wav", "flac"}
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    conn = sqlite3.connect("songs.db")
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if request.method == "POST" and "file" in request.files:
+        file = request.files["file"]
+        title = request.form.get("title")
+        artist = request.form.get("artist")
+        album = request.form.get("album")
+        year = request.form.get("year")
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(save_path)
+
+            try:
+                cursor.execute(
+                    "INSERT INTO songs (path, title, artist, album, year) VALUES (?, ?, ?, ?, ?)",
+                    (filename, title, artist, album, year),
+                )
+                conn.commit()
+                flash("Song uploaded successfully!", "success")
+            except sqlite3.IntegrityError:
+                flash("Song already exists in database.", "error")
+        else:
+            flash("Invalid file type. Only mp3, wav, or flac allowed.", "error")
+
+    if request.method == "POST" and "delete" in request.form:
+        song_path = request.form["delete"]
+        cursor.execute("DELETE FROM songs WHERE path = ?", (song_path,))
+        conn.commit()
+
+        try:
+            os.remove(os.path.join(app.config["UPLOAD_FOLDER"], song_path))
+            flash("Song deleted successfully!", "success")
+        except FileNotFoundError:
+            flash("File not found on disk, but removed from database.", "warning")
+
+    cursor.execute("SELECT * FROM songs")
+    songs = cursor.fetchall()
+    conn.close()
+
+    return render_template("admin/admin.html", songs=songs)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if (request.method == "POST"):
         username = request.form.get("username")
-        password = request.form.get("password")
-
+        password = request.form.get("password")              
         db = get_db()
+        db.row_factory = sqlite3.Row
+        
         cur = db.execute(
             "SELECT * FROM users WHERE username = ? AND password = ?",
             (username, password)
         )
+        db.row_factory = sqlite3.Row
         user = cur.fetchone()
-        
-        if user:
-            return redirect(url_for("home"))
+        if user["admin"] == 1:
+            return redirect(url_for("admin"))
+        elif user:
+            return redirect(url_for("home"))    
         else:
             return "Invalid credentials. Please try again."
     return render_template("auth/login.html")

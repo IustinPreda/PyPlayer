@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Manage Songs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gray-50">
+
+  <div class="max-w-5xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold mb-6 flex items-center space-x-3">
+      <i class="fas fa-tools text-blue-600"></i>
+      <span>Admin Panel</span>
+    </h1>
+
+    <!-- Upload Form -->
+    <div class="card bg-white shadow-md rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-4">Upload New Song</h2>
+      <form action="{{ url_for('admin') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input class="input input-bordered w-full" type="text" name="title" placeholder="Title" required />
+          <input class="input input-bordered w-full" type="text" name="artist" placeholder="Artist" required />
+          <input class="input input-bordered w-full" type="text" name="album" placeholder="Album" required />
+          <input class="input input-bordered w-full" type="number" name="year" placeholder="Year" required />
+        </div>
+        <input type="file" name="file" accept=".mp3" class="file-input file-input-bordered w-full" required />
+        <button class="btn btn-primary w-full mt-2">
+          <i class="fas fa-upload mr-2"></i>Upload Song
+        </button>
+      </form>
+    </div>
+
+    <!-- Songs List -->
+    <div class="card bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-semibold mb-4">Current Songs</h2>
+
+      {% if songs %}
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr class="bg-gray-100">
+              <th>Title</th>
+              <th>Artist</th>
+              <th>Album</th>
+              <th>Year</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for song in songs %}
+            <tr>
+              <td>{{ song.title }}</td>
+              <td>{{ song.artist }}</td>
+              <td>{{ song.album }}</td>
+              <td>{{ song.year }}</td>
+              <td class="text-right">
+                <form method="POST" style="display:inline;">
+                  <input type="hidden" name="delete" value="{{ song.path }}">
+                  <button type="submit" class="btn btn-error btn-sm">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-10 text-gray-500">
+        <i class="fas fa-music text-3xl mb-3"></i>
+        <p>No songs found.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</body>
+</html>

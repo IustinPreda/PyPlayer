@@ -6,9 +6,10 @@ def initialize_db():
     CREATE TABLE IF NOT EXISTS users (
         email TEXT NOT NULL UNIQUE,
         username TEXT NOT NULL,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        admin TEXT DEFAULT '0'
     )
-    """)    
+    """)
 
     con.commit()
     con.close()
